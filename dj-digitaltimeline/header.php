@@ -63,6 +63,12 @@
 <body id="top" <?php body_class(); ?>>
   <header id="header">
       <h1><a href="<?php echo get_permalink($hID); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>" rel="home"><?php echo get_field('title', $hID);?></a></h1>
+      <ul class="view-nav intro">
+        <li class="addDivider active"><a href="#">FULL VIEW</a></li>
+        <li><a href="#">MONTHLY VIEW</a></li>
+        <div class="clearBoth"></div>
+      </ul>
+      <div class="download-nav intro"><a href="#">Print/Download</a></div>
       <ul class="util-nav intro">
         <?php if ($PrevY) echo '<li><a href="#"><span>FY' . substr($PrevY, 2, 2) . ' </span>Q4</a></li>'; ?>
         <li><a href="#"><span><?php echo "FY" . substr($CurY, 2, 2) . " "; ?></span>Q1</a></li>
@@ -70,7 +76,12 @@
         <li><a href="#"><span><?php echo "FY" . substr($CurY, 2, 2) . " "; ?></span>Q3</a></li>
         <li><a href="#"><span><?php echo "FY" . substr($CurY, 2, 2) . " "; ?></span>Q4</a></li>
         <?php if ($NextY) echo '<li><a href="#"><span>FY' . substr($NextY, 2, 2) . ' </span>Q1</a></li>'; ?>
-        <li class="download"><a href="#">Print/Download</a></li>
         <div class="clearBoth"></div>
       </ul>
+      <div class="clearBoth"></div>
+      <div class="month-nav intro">
+        <span>JANUARY</span>
+        <a class="prev" href="#">PREV</a>
+        <a class="next" href="#">NEXT</a>
+      </div>
   </header>

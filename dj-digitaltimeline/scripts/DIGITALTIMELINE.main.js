@@ -9,7 +9,10 @@ DJTIMELINE.main = (function($) {
         $CONTBG_UL,
         $LOCKUP,
         $EVENT_TYPE,
+        $VIEWNAV,
+        $PRINTNAV,
         $UTILNAV,
+        $MONTHNAV,
         $BTN_Q,
         $INTRO_CONT,
         $DETAIL_CONT,
@@ -26,7 +29,9 @@ DJTIMELINE.main = (function($) {
         introPlaying,
         isDragging,
         Q_ID,
-        D_ID;
+        D_ID,
+        M_ID,
+        viewType = 'FULL';
 
     var tList = [],
         tListTotal,
@@ -44,7 +49,10 @@ DJTIMELINE.main = (function($) {
         $CONTAINER = $('.main-content');
         $LOCKUP = $('.footer-content');
         $EVENT_TYPE = $('.footer-content .event-type');
+        $VIEWNAV = $('#header .view-nav');
+        $PRINTNAV = $('#header .download-nav');
         $UTILNAV = $('#header .util-nav');
+        $MONTHNAV = $('#header .month-nav');
         $BTN_Q = $('#header .util-nav li');
         $DETAIL_CONT = $('.detail-content');
         $DETAIL_CONT_WRAP = $('.detail-content .wrapper');
@@ -102,7 +110,7 @@ DJTIMELINE.main = (function($) {
             {
                 sContainN = -1*($CONT_UL.width()-winW);
 
-                if (sContainN > tlX)
+                if (sContainN > tlX && viewType == "FULL")
                 {
                     $CONT_UL.css("left", sContainN+"px");
                     $CONTBG_UL.css("left", sContainN+"px");
@@ -112,6 +120,9 @@ DJTIMELINE.main = (function($) {
 
                 BoxRangeShow(tlX);
             }
+
+            if (viewType == "MONTH" && $CONT_UL.width() < winW) $TIMELINE.css('left', $CONT_UL.width() - winW + 'px');
+            else $TIMELINE.css('left', '0');
 
             setTimeout(function() {
                 resizing = false;
@@ -123,13 +134,26 @@ DJTIMELINE.main = (function($) {
     var getTimelineProp = function getTimelineProp(method) {
         // tlX = 0;
         var tWidth = 0;
-        var $mDiv = $CONT_UL.find('li');
-        var $mBG = $CONTBG_UL.find('li');
-        var mTotal = $mDiv.length - 1;
+        var $mDiv;
+        var $mBG;
+        var mTotal;
         monthX = [];
         qleftP = [];
         D_ID = 0;
         dxList = [];
+
+        if (viewType == 'MONTH')
+        {
+            $mDiv = $CONT_UL.find('li').eq(M_ID);
+            $mBG = $CONTBG_UL.find('li').eq(M_ID);
+            mTotal = 1;
+        }
+        else
+        {
+            $mDiv = $CONT_UL.find('li');
+            $mBG = $CONTBG_UL.find('li');
+            mTotal = $mDiv.length - 1;
+        }
 
         $mDiv.each(function(i) {
             var $THIS = $(this);
@@ -138,7 +162,7 @@ DJTIMELINE.main = (function($) {
             var tallLoop = 0;
             var pppprevBoxW, pppprevBoxX, ppprevBoxW, ppprevBoxX, pprevBoxW, pprevBoxX, pprevBoxS, prevBoxW, prevBoxX, prevBoxS;
 
-            if (i <= 0)
+            if (i <= 0 && viewType == 'FULL')
             {
                 monthW = 30;
             }
@@ -239,7 +263,8 @@ DJTIMELINE.main = (function($) {
             else qleftP.push($mDiv.eq(q * 3 + 1).position().left - 30);
         }
 
-        draggableOn();
+        if ($CONT_UL.width() > winW) draggableOn();
+        else if ($CONT_UL.hasClass('ui-draggable')) $CONT_UL.draggable("destroy");
     };
 
     var draggableOn = function draggableOn() {
@@ -273,7 +298,7 @@ DJTIMELINE.main = (function($) {
 
                 BoxRangeShow(tlX);
                 // console.log("x:"+tlX);
-
+                // console.log('monthX:'+monthX[M_ID]);
                 for (var n = 0; n < qleftP.length; n ++) if (tlX < -1*qleftP[n] + (winW * .5)) setQ(n);
             }
         });
@@ -296,12 +321,26 @@ DJTIMELINE.main = (function($) {
         for (var i = 0; i < monthX.length; i ++) if (monthX[i] < ((-1 * n) + (winW-160))) rNum = i;
         if (method == "all") rNum = 13;
 
-        $CONT_UL.find('li').each(function(i) {
+        var $CONT_OBJ;
+
+        if (viewType == "MONTH")
+        {
+            $CONT_OBJ = $CONT_UL.find('li').eq(M_ID);
+            $CONT_UL.find('li').find('.event-box').removeClass('on');
+            $CONT_UL.find('li').find('.event-box').removeClass('init');
+        }
+        else
+        {
+            M_ID = rNum - 1;
+            $CONT_OBJ = $CONT_UL.find('li');
+        }
+
+        $CONT_OBJ.each(function(i) {
             var $THIS = $(this);
 
             if (i <= rNum)
             {
-                $CONTBG_UL.find('li').eq(i).addClass('on');
+                if (viewType == "FULL") $CONTBG_UL.find('li').eq(i).addClass('on');
 
                 if (i < rNum)
                 {
@@ -357,9 +396,10 @@ DJTIMELINE.main = (function($) {
             else
             {
                 $THIS.find('.event-box').removeClass('on');
-                $CONTBG_UL.find('li').eq(i).removeClass('on');
+                if (viewType == "FULL") $CONTBG_UL.find('li').eq(i).removeClass('on');
             }
         });
+
     };
 
     var detailContOn = function detailContOn(id) {
@@ -432,8 +472,8 @@ DJTIMELINE.main = (function($) {
                     getTimelineProp();
                     initStart("skip");
                     introPlaying = false;
-                } 
-            }           
+                }
+            }
         );
     };
 
@@ -468,6 +508,68 @@ DJTIMELINE.main = (function($) {
         }
 
         loadTimeline();
+    };
+
+    var viewChange = function viewChange() {
+        if ($UTILNAV.hasClass('intro'))
+        {
+            $MONTHNAV.addClass('intro');
+            $UTILNAV.removeClass('intro');
+            viewType = 'FULL';
+
+            $CONTBG_UL.show();
+        }
+        else
+        {
+            $MONTHNAV.removeClass('intro');
+            $UTILNAV.addClass('intro');
+            viewType = 'MONTH';
+
+            $CONTBG_UL.hide();
+            var nearM = $CONTBG_UL.find('li').eq(M_ID).find('.month-label').html();
+            $MONTHNAV.find('span').html(nearM);
+            // console.log($CONTBG_UL.find('li').eq(M_ID).find('.month-label').html());
+        }
+
+        initViewChange(M_ID);
+    };
+
+    var initViewChange = function initViewChange(m_id) {
+        if (viewType == 'MONTH')
+        {
+            for (var i = 0; i < $CONTBG_UL.find('li').length; i ++)
+            {
+                if (i == m_id)
+                {
+                    $CONT_UL.find('li').eq(i).show();
+                }
+                else
+                {
+                    $CONT_UL.find('li').eq(i).hide();
+                }
+            }
+
+            getTimelineProp();
+            simulateDrag(0, 0);
+            BoxRangeShow(0);
+
+            if ($CONT_UL.width() < winW) $TIMELINE.css('left', $CONT_UL.width() - winW + 'px');
+            else $TIMELINE.css('left', '0');
+        }
+        else
+        {
+            $CONT_UL.find('li').show();
+            getTimelineProp();
+            Q_ID = Math.floor(M_ID/3);
+            var myX = -1*(monthX[M_ID] - 30);
+
+            $BTN_Q.removeClass('active');
+            $BTN_Q.eq(Q_ID-1).addClass('active');
+
+            simulateDrag(myX, 1000);
+            BoxRangeShow(myX);
+            $TIMELINE.css('left', '0');
+        }
     };
 
     var removeCookie = function removeCookie(name) {
@@ -556,6 +658,8 @@ DJTIMELINE.main = (function($) {
             $LOCKUP.addClass('short');
             $EVENT_TYPE.removeClass('intro');
             $EVENT_TYPE.removeAttr("style");
+            $VIEWNAV.removeClass('intro');
+            $PRINTNAV.removeClass('intro');
             $UTILNAV.removeClass('intro');
             $CONT_UL.find('li:first-child').css('width', '30px');
             $CONTBG_UL.find('li:first-child').css('width', '30px');
@@ -606,6 +710,8 @@ DJTIMELINE.main = (function($) {
                 setTimeout(function(i) {
                     $EVENT_TYPE.removeClass('intro');
                     $TIMELINE.css('left', '0');
+                    $VIEWNAV.removeClass('intro');
+                    $PRINTNAV.removeClass('intro');
                     $UTILNAV.removeClass('intro');
                     
                     BoxRangeShow(tlX, "intro");
@@ -676,9 +782,44 @@ DJTIMELINE.main = (function($) {
 
                 updateType(method, cName[0]);
             });
+        });  
+
+        $MONTHNAV.find('a').on('click', function(e) {
+            var $THIS = $(this);
+            $THIS.addClass('on');
+
+            if ($THIS.hasClass('prev'))
+            {
+                if (M_ID <= 1) M_ID = $CONTBG_UL.find('li').length - 1;
+                else M_ID = M_ID - 1;
+            }
+            else
+            {
+                if (M_ID >= ($CONTBG_UL.find('li').length - 1)) M_ID = 1;
+                else M_ID = M_ID + 1;
+            }
+
+            var nearM = $CONTBG_UL.find('li').eq(M_ID).find('.month-label').html();
+            $MONTHNAV.find('span').html(nearM);
+
+            initViewChange(M_ID);
+
+            setTimeout(function(i) {
+                $THIS.removeClass('on');
+            }, 150);
         });
 
-        var $UTIL_TOTAL = $UTILNAV.find('li').length;
+        // var $UTIL_TOTAL = $UTILNAV.find('li').length;
+        $VIEWNAV.find('li a').on('click', function(e) {
+            var $PARENT = $(this).parent();
+
+            if (!$PARENT.hasClass('active'))
+            {
+                $VIEWNAV.find('li').removeClass('active');
+                $PARENT.addClass('active');
+                viewChange();
+            }
+        });
 
         $UTILNAV.find('li').each(function(i) {
             var $THIS = $(this).find('a');
@@ -687,158 +828,175 @@ DJTIMELINE.main = (function($) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                if (i < ($UTIL_TOTAL - 1) && !$THIS.hasClass('active'))
+                if (!$THIS.hasClass('active'))
                 {
                     tlX = -1*qleftP[i];
                     if (tlX < sContainN) tlX = sContainN;
                     simulateDrag(tlX, 1000);
                     setQ(i);
                 }
-                else 
+            });
+        });
+
+        $PRINTNAV.find('a').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if ($DOWNLOAD.html() == "" && !IEDetect.init())
+            {
+                $CONTAINER.clone().appendTo($DOWNLOAD);
+
+                if (viewType == "MONTH") $MONTHNAV.clone().appendTo($DOWNLOAD);
+                else $UTILNAV.clone().appendTo($DOWNLOAD);
+
+                $DOWNLOAD.find('.main-content').removeAttr('style');
+                $DOWNLOAD.find('.content ul').removeAttr('class');
+                $DOWNLOAD.find('.content ul').removeAttr('style');
+                $DOWNLOAD.find('.content ul .event-box').addClass('init').addClass('on');
+                $DOWNLOAD.find('.content-bg ul li').addClass('on');
+                $DOWNLOAD.show();
+                var tempContH = $CONTAINER.height();
+                var totalQ = 1;//$UTILNAV.find('li').length - 1;
+                var printI = 0;
+
+                $CONTAINER.hide();
+                $LOCKUP.hide();
+                $('#header').hide();
+
+                for (var q = 0; q < totalQ; q ++)
                 {
-                    if ($DOWNLOAD.html() == "" && !IEDetect.init())
+                    q = Q_ID; // This sets to print current quarter
+                    $PRINT.html("");
+                    $DOWNLOAD.find('.content-bg ul li').hide();
+                    $DOWNLOAD.find('.content ul li').hide();
+                    $DOWNLOAD.find('.util-nav li').hide();
+                    var downloadContW = 0;
+
+                    if (viewType == "MONTH")
                     {
-                        $CONTAINER.clone().appendTo($DOWNLOAD);
-                        $UTILNAV.clone().appendTo($DOWNLOAD);
-                        $DOWNLOAD.find('.main-content').removeAttr('style');
-                        $DOWNLOAD.find('.content ul').removeAttr('class');
-                        $DOWNLOAD.find('.content ul').removeAttr('style');
-                        $DOWNLOAD.find('.content ul .event-box').addClass('init').addClass('on');
-                        $DOWNLOAD.find('.content-bg ul li').addClass('on');
-                        $DOWNLOAD.show();
-                        var tempContH = $CONTAINER.height();
-                        var totalQ = 1;//$UTILNAV.find('li').length - 1;
-                        var printI = 0;
-
-                        $CONTAINER.hide();
-                        $LOCKUP.hide();
-                        $('#header').hide();
-
-                        for (var q = 0; q < totalQ; q ++)
+                        $DOWNLOAD.find('.content ul li').eq(M_ID).show();
+                        downloadContW = downloadContW + $DOWNLOAD.find('.content ul li').eq(M_ID).outerWidth(true);
+                    }
+                    else
+                    {
+                        for (var m = 0; m < 3; m ++)
                         {
-                            q = Q_ID; // This sets to print current quarter
-                            $PRINT.html("");
-                            $DOWNLOAD.find('.content-bg ul li').hide();
-                            $DOWNLOAD.find('.content ul li').hide();
-                            $DOWNLOAD.find('.util-nav li').hide();
-                            var downloadContW = 0;
-
-                            for (var m = 0; m < 3; m ++)
-                            {
-                                var tempI = q * 3;
-                                $DOWNLOAD.find('.content-bg ul li').eq(1 + tempI + m).show();
-                                $DOWNLOAD.find('.content ul li').eq(1 + tempI + m).show();
-                                downloadContW = downloadContW + $DOWNLOAD.find('.content ul li').eq(1 + tempI + m).outerWidth(true);
-                            }
-
-                            if (downloadContW < winW) downloadContW = winW; 
-                            $DOWNLOAD.find('.content-bg ul').css('width', downloadContW + 'px');
-                            $DOWNLOAD.find('.content ul').css('width', downloadContW + 'px');
-                            $DOWNLOAD.find('.util-nav li').eq(q).show();
-                            $DOWNLOAD.css('width', downloadContW + 'px');
-                            $DOWNLOAD.css({
-                                'transform': 'scale(3,3)',
-                                '-ms-transform': 'scale(3,3)',
-                                '-webkit-transform': 'scale(3,3)',
-                                'transform-origin': 'top left'
-                            });
-                            var useWidth = $DOWNLOAD.width() * 3;
-                            var useHeight = $DOWNLOAD.height() * 3;
-
-                            html2canvas($DOWNLOAD, {
-                                width: useWidth,
-                                height: useHeight,
-                                onrendered: function(canvas) {
-                                    var imageData = canvas.toDataURL("image/png");
-                                    var image = new Image();
-                                    image = Canvas2Image.convertToJPEG(canvas);
-
-                                    $PRINT.show();
-                                    $PRINT.html(image);
-                                    // var tempH = $PRINT.width()/1.4142;
-                                    // var imgTempY = $PRINT.find('img').height() - tempH;
-                                    // if (imgTempY > 0) $PRINT.find('img').css('margin-top', (-1 * (imgTempY * .5)) + 'px');
-                                    $LOCKUP.find('.title').clone().appendTo($PRINT);
-                                    $CONTAINER.css('height', '100px');
-
-                                    window.print();
-                                    printI ++;
-
-                                    if (totalQ <= 1 || (printI >= q && totalQ > 1))
-                                    {
-                                        
-                                        $CONTAINER.show();
-                                        $LOCKUP.show();
-                                        $('#header').show();
-
-                                        $PRINT.html("");
-                                        $PRINT.hide();
-                                        
-                                    }
-                                }
-                            });
+                            var tempI = q * 3;
+                            $DOWNLOAD.find('.content-bg ul li').eq(1 + tempI + m).show();
+                            $DOWNLOAD.find('.content ul li').eq(1 + tempI + m).show();
+                            downloadContW = downloadContW + $DOWNLOAD.find('.content ul li').eq(1 + tempI + m).outerWidth(true);
                         }
 
-                        $CONTAINER.css('height', tempContH+'px');
+                    }
+
+                    if (downloadContW < winW) downloadContW = winW; 
+                    if (viewType == "FULL") $DOWNLOAD.find('.content-bg ul').css('width', downloadContW + 'px');
+                    $DOWNLOAD.find('.content ul').css('width', downloadContW + 'px');
+
+                    if (viewType == "FULL") $DOWNLOAD.find('.util-nav li').eq(q).show();
+
+                    $DOWNLOAD.css('width', downloadContW + 'px');
+                    $DOWNLOAD.css({
+                        'transform': 'scale(3,3)',
+                        '-ms-transform': 'scale(3,3)',
+                        '-webkit-transform': 'scale(3,3)',
+                        'transform-origin': 'top left'
+                    });
+                    var useWidth = $DOWNLOAD.width() * 3;
+                    var useHeight = $DOWNLOAD.height() * 3;
+
+                    html2canvas($DOWNLOAD, {
+                        width: useWidth,
+                        height: useHeight,
+                        onrendered: function(canvas) {
+                            var imageData = canvas.toDataURL("image/png");
+                            var image = new Image();
+                            image = Canvas2Image.convertToJPEG(canvas);
+
+                            $PRINT.show();
+                            $PRINT.html(image);
+                            // var tempH = $PRINT.width()/1.4142;
+                            // var imgTempY = $PRINT.find('img').height() - tempH;
+                            // if (imgTempY > 0) $PRINT.find('img').css('margin-top', (-1 * (imgTempY * .5)) + 'px');
+                            $LOCKUP.find('.title').clone().appendTo($PRINT);
+                            $CONTAINER.css('height', '100px');
+
+                            window.print();
+                            printI ++;
+
+                            if (totalQ <= 1 || (printI >= q && totalQ > 1))
+                            {
+                                
+                                $CONTAINER.show();
+                                $LOCKUP.show();
+                                $('#header').show();
+
+                                $PRINT.html("");
+                                $PRINT.hide();
+                                
+                            }
+                        }
+                    });
+                }
+
+                $CONTAINER.css('height', tempContH+'px');
+                $DOWNLOAD.html("");
+                $DOWNLOAD.hide();
+                
+                /*
+                html2canvas($DOWNLOAD, {
+                    onrendered: function(canvas) {
+                        var imageData = canvas.toDataURL("image/jpeg");
+                        var image = new Image();
+                        image = Canvas2Image.convertToJPEG(canvas);
+
+                        var doc = new jsPDF('landscape', 'in', 'letter');
+                        // var doc = new jsPDF();
+                        // doc.addImage(imageData, 'JPEG', 12, 10);
+                        doc.addImage(imageData, 'JPEG', 0, 0);
+                        var croppingXPosition = 1095;
+                        count = (image.width) / 1095;
+                        // console.log(count);
+                        for (var j = 1; j < count; j ++)
+                        {
+                            doc.addPage();
+                            var sourceX = croppingXPosition;
+                            var sourceY = 0;
+                            var sourceWidth = 1095;
+                            var sourceHeight = image.height;
+                            var destWidth = sourceWidth;
+                            var destHeight = sourceHeight;
+                            var destX = 0;
+                            var destY = 0;
+                            var canvas1 = document.createElement('canvas');
+                            canvas1.setAttribute('height', destHeight);
+                            canvas1.setAttribute('width', destWidth);                         
+                            var ctx = canvas1.getContext("2d");
+                            ctx.drawImage(image, sourceX, 
+                                                 sourceY,
+                                                 sourceWidth,
+                                                 sourceHeight, 
+                                                 destX, 
+                                                 destY, 
+                                                 destWidth, 
+                                                 destHeight);
+                            var image2 = new Image();
+                            image2 = Canvas2Image.convertToJPEG(canvas1);
+                            image2Data = image2.src;
+                            // doc.addImage(image2Data, 'JPEG', 12, 10);
+                            doc.addImage(image2Data, 'JPEG', 0, 0);
+                            croppingXPosition += destWidth;
+                        }               
+                        var d = new Date().toISOString().slice(0, 19).replace(/-/g, ""),
+                        filename = 'DJ_timeline' + d + '.pdf';
+                        doc.save(filename);
+
                         $DOWNLOAD.html("");
                         $DOWNLOAD.hide();
-                        
-                        /*
-                        html2canvas($DOWNLOAD, {
-                            onrendered: function(canvas) {
-                                var imageData = canvas.toDataURL("image/jpeg");
-                                var image = new Image();
-                                image = Canvas2Image.convertToJPEG(canvas);
-
-                                var doc = new jsPDF('landscape', 'in', 'letter');
-                                // var doc = new jsPDF();
-                                // doc.addImage(imageData, 'JPEG', 12, 10);
-                                doc.addImage(imageData, 'JPEG', 0, 0);
-                                var croppingXPosition = 1095;
-                                count = (image.width) / 1095;
-                                // console.log(count);
-                                for (var j = 1; j < count; j ++)
-                                {
-                                    doc.addPage();
-                                    var sourceX = croppingXPosition;
-                                    var sourceY = 0;
-                                    var sourceWidth = 1095;
-                                    var sourceHeight = image.height;
-                                    var destWidth = sourceWidth;
-                                    var destHeight = sourceHeight;
-                                    var destX = 0;
-                                    var destY = 0;
-                                    var canvas1 = document.createElement('canvas');
-                                    canvas1.setAttribute('height', destHeight);
-                                    canvas1.setAttribute('width', destWidth);                         
-                                    var ctx = canvas1.getContext("2d");
-                                    ctx.drawImage(image, sourceX, 
-                                                         sourceY,
-                                                         sourceWidth,
-                                                         sourceHeight, 
-                                                         destX, 
-                                                         destY, 
-                                                         destWidth, 
-                                                         destHeight);
-                                    var image2 = new Image();
-                                    image2 = Canvas2Image.convertToJPEG(canvas1);
-                                    image2Data = image2.src;
-                                    // doc.addImage(image2Data, 'JPEG', 12, 10);
-                                    doc.addImage(image2Data, 'JPEG', 0, 0);
-                                    croppingXPosition += destWidth;
-                                }               
-                                var d = new Date().toISOString().slice(0, 19).replace(/-/g, ""),
-                                filename = 'DJ_timeline' + d + '.pdf';
-                                doc.save(filename);
-
-                                $DOWNLOAD.html("");
-                                $DOWNLOAD.hide();
-                            }
-                        });
-                        */
                     }
-                }
-            });
+                });
+                */
+            }
         });
 
         $DETAIL_CONT.find('a.close-btn').on('click', function(e) {

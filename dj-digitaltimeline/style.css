@@ -165,18 +165,155 @@ body {
     display: block;
     position: fixed;
     top: 10px;
-    right: 10px;
+    left: 0;
+    width: 100%;
     z-index: 5000;
 }
 #header h1 {
     display: none;
 }
-#header .util-nav {
+#header .view-nav,
+#header .util-nav,
+#header .download-nav {
     display: inline-block;
     position: relative;
 }
-#header .util-nav.intro {
+#header .month-nav {
+    position: inherit;
+    width: 300px;
+    left: 50%;
+    top: 10px;
+    margin-left: -150px;
+    text-align: center;
+}
+#header .view-nav.intro,
+#header .util-nav.intro,
+#header .download-nav.intro,
+#header .month-nav.intro {
     display: none;
+}
+
+#header .view-nav {
+    margin-left: 10px;
+    margin-top: 8px;
+    float: left;
+}
+#header .view-nav li {
+    position: relative;
+    float: left;
+    margin: 0 10px;
+}
+#header .view-nav li.addDivider {
+    margin-right: 0;
+    padding-right: 10px;
+    border-right: 1px solid #3d4c4c;
+}
+#header .view-nav li a {
+    font-size: 1em;
+    letter-spacing: .5pt;
+    color: #616a6a;
+    text-decoration: none;
+    outline: none;
+    border: none;
+    -webkit-transition: color .25s ease-in-out;
+    -o-transition: color .25s ease-in-out;
+    -moz-transition: color .25s ease-in-out;
+    -ms-transition: color .25s ease-in-out;
+    -kthtml-transition: color .25s ease-in-out;
+    transition: color .25s ease-in-out;
+}
+#header .view-nav li a:hover {
+    color: #00a1d3;
+    text-decoration: none;
+}
+#header .view-nav li.active a {
+    color: #ffffff;
+    cursor: default;
+}
+
+#header .month-nav span {
+    width: 100%;
+    font-size: 2em;
+    letter-spacing: .5pt;
+    color: #ffffff;
+    text-decoration: none;
+    text-transform: uppercase;
+    outline: none;
+    border: none;
+}
+#header .month-nav a {
+    display: block;
+    width: 12px;
+    height: 22px;
+    background: url("images/sprite.svg") no-repeat -140px -80px;
+    font: 0/0 a;
+    text-shadow: none;
+    color: transparent;
+    position: absolute;
+    top: 6px;
+    overflow: hidden;
+    border: none;
+    outline: none;
+    filter: alpha(opacity=75);
+    -moz-opacity: .75;
+    -khtml-opacity: .75;
+    opacity: .75;
+
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+.no-svg #header .month-nav a {
+    background: url("images/sprite.png") no-repeat -140px -80px;
+}
+#header .month-nav a.prev {
+    left: 5px;
+    z-index: 500;
+    -webkit-transition: left .35s ease-in-out;
+    -o-transition: left .35s ease-in-out;
+    -moz-transition: left .35s ease-in-out;
+    -ms-transition: left .35s ease-in-out;
+    -kthtml-transition: left .35s ease-in-out;
+    transition: left .35s ease-in-out;
+}
+#header .month-nav a.next {
+    right: 5px;
+    background-position: -170px -80px;
+    z-index: 550;
+    -webkit-transition: right .35s ease-in-out;
+    -o-transition: right .35s ease-in-out;
+    -moz-transition: right .35s ease-in-out;
+    -ms-transition: right .35s ease-in-out;
+    -kthtml-transition: right .35s ease-in-out;
+    transition: right .35s ease-in-out;
+}
+#header .month-nav a:hover {
+    text-decoration: none;
+    filter: alpha(opacity=100);
+    -moz-opacity: 1;
+    -khtml-opacity: 1;
+    opacity: 1;
+}
+#header .month-nav a.prev.on {
+    left: 0px;
+    -webkit-transition: none;
+    -o-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -kthtml-transition: none;
+    transition: none;
+}
+#header .month-nav a.next.on {
+    right: 0px;
+    -webkit-transition: none;
+    -o-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -kthtml-transition: none;
+    transition: none;
+}
+
+#header .util-nav {
+    /*margin-right: 10px;*/
+    float: right;
 }
 #header .util-nav li {
     position: relative;
@@ -215,12 +352,14 @@ body {
     color: #ffffff;
     cursor: default;
 }
-#header .util-nav li.download {
+
+#header .download-nav {
+    float: right;
     width: 21px;
     height: 23px;
-    margin: 5px 5px 0 20px;
+    margin: 5px 15px 0 20px;
 }
-#header .util-nav li.download a {
+#header .download-nav a {
     position: absolute;
     width: 21px;
     height: 23px;
@@ -232,10 +371,10 @@ body {
     color: transparent;
     overflow: hidden;
 }
-.no-svg #header .util-nav li.download a {
+.no-svg #header .download-nav a {
     background: url("images/sprite.png") no-repeat -120px -130px;
 }
-#header .util-nav li.download a:hover {
+#header .download-nav a:hover {
     background-position: -150px -130px;
 }
 
@@ -1426,12 +1565,14 @@ body > .main-content .content ul li .event-box.hor.lg .event-content .img img {
     color: #2b3333;
     vertical-align: top;
 }
-.download-content .util-nav {
+.download-content .util-nav,
+.download-content .month-nav {
     display: block;
     position: inherit;
     width: 300px;
     height: 70px;
-    top: 20px;
+    /*top: 20px;*/
+    top: 10px;
     left: auto !important;
     right: 30px;
     text-align: right;
@@ -1450,6 +1591,18 @@ body > .main-content .content ul li .event-box.hor.lg .event-content .img img {
     vertical-align: middle;
     font-size: .5em;
     font-weight: 300;
+}
+.download-content .month-nav a {
+    display: none;
+}
+.download-content .month-nav span {
+    font-size: 2em;
+    letter-spacing: .5pt;
+    color: #4d4d4d;
+    text-decoration: none;
+    text-transform: uppercase;
+    outline: none;
+    border: none;
 }
 
 .download-content {
